@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Skills — EDteam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0a0a0a;
+    --surface:  #111111;
+    --surface2: #1a1a1a;
+    --border:   rgba(255,255,255,0.08);
+    --border2:  rgba(255,255,255,0.14);
+    --text:     #f0ede8;
+    --muted:    #6b6b6b;
+    --accent:   #ff6b35;
+    --accent2:  #e05520;
+    --green:    #7dba8a;
+    --red:      #d97070;
+    --blue:     #7aafcf;
+    --mono:     'DM Mono', monospace;
+    --sans:     'Inter', sans-serif;
+    --display:  'Syne', sans-serif;
+  }
+
+  html, body { width:100%; height:100%; background:var(--bg); color:var(--text); font-family:var(--sans); overflow:hidden; }
+  .deck { width:100%; height:100vh; position:relative; }
+
+  .slide {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:60px;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.4s ease, transform 0.4s ease;
+    transform:translateX(40px);
+  }
+  .slide.active  { opacity:1; pointer-events:all; transform:translateX(0); }
+  .slide.exit    { opacity:0; transform:translateX(-40px); pointer-events:none; }
+
+  .nav {
+    position:fixed; bottom:36px; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:20px;
+    background:var(--surface); border:1px solid var(--border2);
+    border-radius:40px; padding:10px 20px; z-index:100;
+  }
+  .nav button {
+    background:none; border:none; color:var(--muted);
+    font-family:var(--mono); font-size:13px; cursor:pointer;
+    padding:6px 14px; border-radius:20px; transition:all 0.2s;
+  }
+  .nav button:hover { color:var(--text); background:var(--surface2); }
+  .counter { font-family:var(--mono); font-size:12px; color:var(--muted); min-width:52px; text-align:center; }
+  .progress-dots { display:flex; gap:6px; align-items:center; }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--border2); transition:all 0.3s; cursor:pointer; }
+  .dot.active { background:var(--accent); transform:scale(1.3); }
+
+  .key-hint { position:fixed; top:24px; right:28px; font-family:var(--mono); font-size:11px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .key { border:1px solid var(--border2); border-radius:4px; padding:2px 7px; }
+
+  h1 { font-family:var(--display); font-size:clamp(40px,5vw,64px); font-weight:800; line-height:1.05; letter-spacing:-0.03em; }
+  h2 { font-family:var(--display); font-size:clamp(28px,3.5vw,44px); font-weight:700; line-height:1.1; letter-spacing:-0.02em; margin-bottom:8px; }
+  h3 { font-family:var(--display); font-size:20px; font-weight:600; }
+  p  { font-size:16px; line-height:1.65; color:rgba(240,237,232,0.7); }
+  .mono    { font-family:var(--mono); }
+  .accent  { color:var(--accent); }
+  .green   { color:var(--green); }
+  .red     { color:var(--red); }
+  .blue    { color:var(--blue); }
+  .muted   { color:var(--muted); }
+
+  /* COVER */
+  #s0 { background: radial-gradient(ellipse at 60% 40%, rgba(255,107,53,0.08) 0%, transparent 65%); }
+  #s0 .eyebrow { font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:24px; }
+  #s0 h1 { max-width:700px; text-align:center; margin-bottom:20px; }
+  #s0 .subtitle { font-size:16px; color:rgba(240,237,232,0.45); max-width:480px; text-align:center; line-height:1.6; }
+  .divider { width:40px; height:1px; background:var(--border2); margin:28px auto; }
+
+  #s0 .author-line {
+    display:flex; align-items:center; gap:12px; margin-top:32px;
+  }
+  #s0 .author-avatar {
+    width:40px; height:40px; border-radius:50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--display); font-weight:800; font-size:14px; color:#fff;
+  }
+  #s0 .author-info { text-align:left; }
+  #s0 .author-name { font-family:var(--display); font-size:14px; font-weight:600; color:var(--text); }
+  #s0 .author-role { font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; }
+  #s0 .edteam-badge {
+    margin-left:20px; padding-left:20px; border-left:1px solid var(--border2);
+    font-family:var(--display); font-size:18px; font-weight:800; color:var(--accent);
+    letter-spacing:-0.02em;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  /* REASONS GRID */
+  .reasons { display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; max-width:820px; margin-top:36px; }
+  .reason-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:26px 24px; animation:fadeUp 0.5s ease both; display:flex; gap:16px; align-items:flex-start; }
+  .reason-card:nth-child(1){animation-delay:0.05s} .reason-card:nth-child(2){animation-delay:0.15s}
+  .reason-card:nth-child(3){animation-delay:0.25s} .reason-card:nth-child(4){animation-delay:0.35s}
+  .reason-num { font-family:var(--mono); font-size:22px; font-weight:500; color:var(--accent); opacity:0.5; flex-shrink:0; line-height:1; }
+  .reason-card h3 { font-size:15px; margin-bottom:6px; }
+  .reason-card p  { font-size:13px; }
+
+  /* ATTR GRID */
+  .attr-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:100%; max-width:900px; margin-top:36px; }
+  .attr-grid.attr-grid-2 { grid-template-columns:repeat(2,1fr); }
+  .attr-item { display:flex; gap:14px; align-items:flex-start; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 18px; animation:fadeUp 0.5s ease both; transition:border-color 0.2s; }
+  .attr-item:hover { border-color:var(--border2); }
+  .attr-item.attr-full { grid-column:1/-1; }
+  .attr-item.attr-highlight { border-color:rgba(255,107,53,0.25); background:rgba(255,107,53,0.04); }
+  .attr-icon { font-size:14px; flex-shrink:0; margin-top:2px; color:var(--accent); opacity:0.6; }
+  .attr-item h3 { font-size:14px; margin-bottom:5px; }
+  .attr-item p  { font-size:12px; }
+  .attr-item:nth-child(1){animation-delay:0.05s} .attr-item:nth-child(2){animation-delay:0.12s}
+  .attr-item:nth-child(3){animation-delay:0.19s} .attr-item:nth-child(4){animation-delay:0.26s}
+  .attr-item:nth-child(5){animation-delay:0.33s} .attr-item:nth-child(6){animation-delay:0.40s}
+
+  /* INSIGHT BOX */
+  .insight { margin-top:28px; background:rgba(255,107,53,0.07); border:1px solid rgba(255,107,53,0.18); border-radius:10px; padding:16px 24px; font-size:13px; color:rgba(240,237,232,0.8); max-width:900px; text-align:center; line-height:1.6; }
+
+  /* SLIDE 2 — skills definition layout */
+  .skills-def { display:flex; flex-direction:column; align-items:center; width:100%; max-width:860px; margin-top:32px; gap:16px; }
+  .skills-def-main { background:var(--surface); border:1px solid rgba(255,107,53,0.2); border-radius:16px; padding:32px 36px; animation:fadeUp 0.5s ease both; animation-delay:0.05s; width:100%; }
+  .skills-def-main p { font-size:17px; line-height:1.7; color:rgba(240,237,232,0.85); text-align:center; }
+  .skills-examples { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%; animation:fadeUp 0.5s ease both; animation-delay:0.2s; }
+  .skill-pill { background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:14px 16px; text-align:center; }
+  .skill-pill .pill-icon { font-family:var(--mono); font-size:20px; display:block; margin-bottom:6px; }
+  .skill-pill .pill-label { font-family:var(--display); font-size:12px; font-weight:600; display:block; margin-bottom:4px; }
+  .skill-pill .pill-desc  { font-family:var(--mono); font-size:10px; color:var(--muted); }
+
+  /* SLIDE 2 — ¿Qué soluciona? */
+  .soluciona-wrap { display:grid; grid-template-columns:1fr auto 1fr; gap:20px; width:100%; max-width:880px; margin-top:32px; align-items:center; }
+  .sol-problem, .sol-solution { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 26px; animation:fadeUp 0.5s ease both; }
+  .sol-problem { animation-delay:0.05s; border-top:2px solid var(--red); }
+  .sol-solution { animation-delay:0.2s; border-top:2px solid var(--green); }
+  .sol-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; display:block; }
+  .sol-problem p, .sol-solution p { font-size:13px; line-height:1.65; margin-bottom:16px; }
+  .sol-repeat { display:flex; flex-direction:column; gap:6px; }
+  .rep-bubble { background:rgba(217,112,112,0.08); border:1px solid rgba(217,112,112,0.18); border-radius:8px; padding:7px 12px; font-family:var(--mono); font-size:11px; color:var(--red); opacity:0.8; }
+  .sol-benefit { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; font-size:13px; color:rgba(240,237,232,0.75); }
+  .ben-icon { color:var(--green); font-size:13px; flex-shrink:0; margin-top:1px; }
+  .sol-arrow { font-family:var(--display); font-size:28px; color:var(--muted); text-align:center; animation:fadeUp 0.5s ease both; animation-delay:0.12s; }
+
+  /* SLIDE 4 — ¿Cómo se usa? */
+  .como-wrap { display:grid; grid-template-columns:1fr 1fr; gap:20px; width:100%; max-width:880px; margin-top:32px; align-items:start; }
+  .como-main { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 26px; display:flex; flex-direction:column; gap:0; animation:fadeUp 0.5s ease both; animation-delay:0.05s; }
+  .como-row { display:flex; gap:18px; align-items:flex-start; padding:4px 0; }
+  .como-icon { font-size:22px; flex-shrink:0; margin-top:2px; }
+  .como-row h3 { font-size:15px; margin-bottom:6px; }
+  .como-row p  { font-size:13px; line-height:1.6; }
+  .como-divider { height:1px; background:var(--border); margin:20px 0; }
+  .como-tokens { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 26px; animation:fadeUp 0.5s ease both; animation-delay:0.18s; }
+  .tokens-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:20px; display:block; }
+  .tokens-compare { display:flex; flex-direction:column; gap:14px; }
+  .tok-item { display:flex; align-items:center; gap:12px; }
+  .tok-file { font-size:12px; width:80px; flex-shrink:0; }
+  .tok-bar-wrap { flex:1; background:var(--surface2); border-radius:4px; height:8px; overflow:hidden; }
+  .tok-bar { height:100%; border-radius:4px; display:block; }
+  .tok-bar-full    { width:100%; background:rgba(217,112,112,0.5); }
+  .tok-bar-partial { width:32%; background:var(--accent); }
+  .tok-desc { font-size:11px; color:var(--muted); width:130px; flex-shrink:0; }
+  .tok-item.tok-light .tok-desc { color:var(--accent); }
+
+  /* SLIDE 3 — agent skills layout */
+  .agent-hero { background:var(--surface); border:1px solid rgba(255,107,53,0.22); border-radius:16px; padding:28px 36px; width:100%; max-width:860px; margin-top:28px; animation:fadeUp 0.5s ease both; animation-delay:0.05s; }
+  .agent-hero p { font-size:16px; line-height:1.7; color:rgba(240,237,232,0.85); text-align:center; }
+  .agent-pillars { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; width:100%; max-width:860px; margin-top:14px; animation:fadeUp 0.5s ease both; animation-delay:0.2s; }
+  .pillar { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 14px; text-align:center; transition:border-color 0.2s; }
+  .pillar:hover { border-color:rgba(255,107,53,0.3); }
+  .pillar-icon { font-size:22px; display:block; margin-bottom:8px; }
+  .pillar h3 { font-size:13px; font-weight:600; margin-bottom:5px; line-height:1.3; }
+  .pillar p { font-size:11px; color:var(--muted); line-height:1.5; }
+  .pillar:nth-child(1){animation-delay:0.25s} .pillar:nth-child(2){animation-delay:0.32s}
+  .pillar:nth-child(3){animation-delay:0.39s} .pillar:nth-child(4){animation-delay:0.46s}
+
+  /* BVS (Detailed VS) */
+  .bvs-wrap { display:grid; grid-template-columns:1fr auto 1fr; width:100%; max-width:920px; align-items:start; }
+  .bvs-col { padding:0 8px; }
+  .bvs-header { margin-bottom:20px; }
+  .bvs-tag { font-family:var(--mono); font-size:11px; letter-spacing:0.08em; padding:4px 12px; border-radius:20px; display:inline-block; margin-bottom:10px; }
+  .bvs-tag.sk   { background:rgba(125,186,138,0.12); color:var(--green); }
+  .bvs-tag.bmad { background:rgba(122,175,207,0.12); color:var(--blue); }
+  .bvs-tag.gold { background:rgba(255,107,53,0.12); color:var(--accent); }
+  .bvs-when { font-size:13px; color:var(--muted); line-height:1.4; }
+  .bvs-list { list-style:none; display:flex; flex-direction:column; gap:10px; }
+  .bvs-list li { font-size:13px; color:rgba(240,237,232,0.7); display:flex; gap:10px; align-items:flex-start; line-height:1.45; }
+  .bvs-check { flex-shrink:0; font-size:12px; margin-top:1px; }
+  .bvs-divider { display:flex; align-items:center; justify-content:center; padding:0 20px; padding-top:60px; }
+  .bvs-divider span { font-family:var(--display); font-size:13px; color:var(--muted); background:var(--surface2); border:1px solid var(--border2); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .bvs-note { margin-top:28px; max-width:920px; font-size:12px; color:var(--muted); text-align:center; border-top:1px solid var(--border); padding-top:18px; line-height:1.6; }
+
+  /* ── QUIZ — estilo ¿Quién quiere ser millonario? ── */
+  #s11.active { overflow-y: auto; justify-content: flex-start; padding-top: 48px; padding-bottom: 90px; }
+  .quiz-wrap { width:100%; max-width:780px; }
+  .quiz-header { text-align:center; margin-bottom:28px; }
+  .quiz-header h2 { font-size:34px; margin-bottom:4px; }
+  .quiz-header p  { font-size:13px; color:var(--muted); }
+
+  .question { display:none; flex-direction:column; align-items:center; animation:fadeUp 0.4s ease both; }
+  .question.active-q { display:flex; }
+
+  .q-lifeline { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  .q-number-badge { font-family:var(--mono); font-size:11px; color:var(--accent); background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.25); border-radius:20px; padding:4px 14px; margin-bottom:20px; display:inline-block; letter-spacing:0.08em; }
+  .q-text-box { background:var(--surface); border:1px solid var(--border2); border-radius:16px; padding:28px 36px; width:100%; text-align:center; margin-bottom:28px; }
+  .q-text-box p { font-size:18px; font-weight:500; color:var(--text); line-height:1.5; font-family:var(--display); }
+
+  .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; }
+  .option {
+    display:flex; align-items:center; gap:14px;
+    padding:16px 20px; border-radius:12px;
+    border:1px solid var(--border2);
+    background:var(--surface);
+    cursor:pointer; transition:all 0.2s;
+    font-size:14px; color:rgba(240,237,232,0.85);
+    user-select:none; position:relative; overflow:hidden;
+  }
+  .option::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg, rgba(255,107,53,0.06), transparent);
+    opacity:0; transition:opacity 0.2s;
+  }
+  .option:hover:not(.locked)::before { opacity:1; }
+  .option:hover:not(.locked) { border-color:rgba(255,107,53,0.4); color:var(--text); transform:translateY(-1px); box-shadow:0 4px 20px rgba(255,107,53,0.1); }
+  .opt-letter {
+    font-family:var(--mono); font-size:12px; font-weight:500;
+    width:28px; height:28px; border-radius:50%;
+    background:rgba(255,255,255,0.06); border:1px solid var(--border2);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; color:var(--accent); transition:all 0.2s;
+  }
+  .option:hover:not(.locked) .opt-letter { background:rgba(255,107,53,0.15); border-color:rgba(255,107,53,0.4); }
+  .option.correct { border-color:rgba(125,186,138,0.5); background:rgba(125,186,138,0.1); color:var(--green); }
+  .option.correct .opt-letter { background:rgba(125,186,138,0.2); border-color:var(--green); color:var(--green); }
+  .option.wrong { border-color:rgba(217,112,112,0.3); background:rgba(217,112,112,0.06); color:var(--muted); text-decoration:line-through; text-decoration-color:rgba(217,112,112,0.4); }
+  .option.wrong .opt-letter { background:rgba(217,112,112,0.1); border-color:rgba(217,112,112,0.3); color:var(--red); }
+  .locked { cursor:default; transform:none !important; box-shadow:none !important; }
+
+  .q-feedback { margin-top:18px; width:100%; background:rgba(255,107,53,0.07); border:1px solid rgba(255,107,53,0.2); border-radius:10px; padding:14px 20px; font-size:13px; color:rgba(240,237,232,0.75); line-height:1.55; display:none; text-align:center; }
+  .q-feedback.show { display:block; animation:fadeUp 0.3s ease both; }
+
+  .quiz-progress { display:flex; justify-content:center; gap:8px; margin-bottom:24px; }
+  .qp-dot { width:28px; height:4px; border-radius:2px; background:var(--border2); transition:all 0.3s; }
+  .qp-dot.done { background:var(--green); }
+  .qp-dot.current { background:var(--accent); }
+
+  .quiz-nav { display:flex; justify-content:center; margin-top:20px; }
+  .btn-next { background:var(--accent); color:#111; font-family:var(--display); font-size:14px; font-weight:700; padding:12px 32px; border:none; border-radius:10px; cursor:pointer; transition:all 0.2s; display:none; }
+  .btn-next:hover { background:var(--accent2); transform:translateY(-1px); }
+  .btn-next.show { display:block; animation:fadeUp 0.3s ease both; }
+
+  .quiz-score { display:none; flex-direction:column; align-items:center; text-align:center; padding:40px 20px; animation:fadeUp 0.5s ease both; }
+  .quiz-score.show { display:flex; }
+  .score-trophy { font-size:64px; margin-bottom:16px; }
+  .score-num { font-family:var(--display); font-size:72px; font-weight:800; color:var(--accent); line-height:1; margin-bottom:4px; }
+  .score-label { font-size:14px; color:var(--muted); margin-bottom:16px; }
+  .score-msg { font-size:18px; color:var(--text); font-weight:500; margin-bottom:28px; max-width:460px; line-height:1.5; }
+  .btn-reset { background:none; border:1px solid var(--border2); color:var(--muted); font-family:var(--mono); font-size:12px; padding:10px 28px; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+  .btn-reset:hover { border-color:var(--accent2); color:var(--accent); }
+
+  /* SLIDE 5 — Diff intro grid */
+  .diff-intro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; width:100%; max-width:900px; margin-top:40px; }
+  .diff-intro-grid-5 { grid-template-columns:repeat(5,1fr); max-width:1060px; }
+  .diff-tool-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px 20px; text-align:center; animation:fadeUp 0.5s ease both; transition:border-color 0.2s; }
+  .diff-tool-card:nth-child(1){animation-delay:0.05s} .diff-tool-card:nth-child(2){animation-delay:0.15s}
+  .diff-tool-card:nth-child(3){animation-delay:0.25s} .diff-tool-card:nth-child(4){animation-delay:0.35s}
+  .diff-tool-card:hover { border-color:var(--border2); }
+  .diff-tool-highlight { border-color:rgba(255,107,53,0.3); background:rgba(255,107,53,0.04); }
+  .diff-icon { font-size:28px; display:block; margin-bottom:12px; }
+  .diff-label { font-size:11px; letter-spacing:0.06em; margin-bottom:10px; display:block; color:var(--muted); }
+  .diff-tool-card p { font-size:12px; line-height:1.5; }
+
+  /* SLIDE 7 — SubAgentes */
+  .subagent-layout { display:flex; flex-direction:column; width:100%; max-width:860px; margin-top:28px; gap:16px; }
+  .sa-hero { background:var(--surface); border:1px solid rgba(255,107,53,0.2); border-radius:14px; padding:24px 32px; animation:fadeUp 0.5s ease both; animation-delay:0.05s; }
+  .sa-hero p { font-size:16px; line-height:1.7; color:rgba(240,237,232,0.85); text-align:center; }
+  .sa-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; animation:fadeUp 0.5s ease both; animation-delay:0.18s; }
+  .sa-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:22px 18px; display:flex; gap:14px; align-items:flex-start; transition:border-color 0.2s; }
+  .sa-card:hover { border-color:rgba(255,107,53,0.25); }
+  .sa-num { font-family:var(--mono); font-size:20px; font-weight:500; color:var(--accent); opacity:0.5; flex-shrink:0; line-height:1; }
+  .sa-card h3 { font-size:14px; margin-bottom:6px; }
+  .sa-card p { font-size:12px; line-height:1.55; }
+
+  /* SLIDE 8 — Hooks */
+  .hooks-layout { display:flex; flex-direction:column; width:100%; max-width:860px; margin-top:28px; gap:16px; }
+  .hooks-def { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 28px; animation:fadeUp 0.5s ease both; animation-delay:0.05s; }
+  .hooks-def p { font-size:15px; line-height:1.7; color:rgba(240,237,232,0.85); text-align:center; }
+  .hooks-events { display:flex; flex-direction:column; gap:8px; animation:fadeUp 0.5s ease both; animation-delay:0.15s; }
+  .hook-event { display:flex; align-items:center; gap:16px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 20px; }
+  .hook-event:hover { border-color:var(--border2); }
+  .hook-trigger { font-size:12px; color:var(--accent); width:120px; flex-shrink:0; }
+  .hook-arrow { color:var(--muted); flex-shrink:0; font-size:14px; }
+  .hook-desc { font-size:13px; color:rgba(240,237,232,0.7); line-height:1.4; }
+  .hooks-vs-skills { display:flex; align-items:center; gap:0; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 20px; animation:fadeUp 0.5s ease both; animation-delay:0.28s; }
+  .hvs-item { flex:1; display:flex; align-items:flex-start; gap:12px; }
+  .hvs-tag { font-size:11px; letter-spacing:0.06em; color:var(--muted); flex-shrink:0; padding-top:1px; }
+  .hvs-text { font-size:12px; color:rgba(240,237,232,0.65); line-height:1.5; }
+  .hvs-divider { color:var(--border2); font-size:24px; padding:0 20px; flex-shrink:0; }
+
+  /* QUIZ slide scroll */
+  #s11.active { overflow-y: auto; justify-content: flex-start; padding-top: 48px; padding-bottom: 80px; }
+
+  /* SLIDE 11 — Directory structure */
+  .dir-layout { display:grid; grid-template-columns:minmax(0,360px) 1fr; gap:24px; width:100%; max-width:960px; margin-top:32px; align-items:start; }
+  .dir-tree { background:var(--surface); border:1px solid var(--border2); border-radius:14px; padding:24px 26px; font-family:var(--mono); font-size:13px; line-height:1.85; color:rgba(240,237,232,0.75); animation:fadeUp 0.5s ease both; animation-delay:0.05s; white-space:pre; overflow-x:auto; }
+  .dir-tree .tree-root { color:var(--accent); font-weight:500; }
+  .dir-tree .tree-required { color:var(--text); font-weight:500; }
+  .dir-tree .tree-optional { color:rgba(240,237,232,0.65); }
+  .dir-tree .tree-comment { color:var(--muted); font-size:11px; }
+  .dir-tree .tree-required-tag { color:var(--green); }
+  .dir-tree .tree-optional-tag { color:var(--accent2); }
+  .dir-optional { display:flex; flex-direction:column; gap:10px; animation:fadeUp 0.5s ease both; animation-delay:0.18s; }
+  .dir-opt-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; gap:14px; align-items:flex-start; transition:border-color 0.2s; }
+  .dir-opt-card:hover { border-color:rgba(255,107,53,0.25); }
+  .dir-opt-name { font-family:var(--mono); font-size:12px; color:var(--accent); flex-shrink:0; width:96px; padding-top:2px; }
+  .dir-opt-body h3 { font-size:13px; font-weight:600; margin-bottom:3px; }
+  .dir-opt-body p { font-size:12px; line-height:1.5; color:rgba(240,237,232,0.65); }
+
+  /* SLIDES 12 & 13 — Frontmatter */
+  .fm-layout { display:flex; flex-direction:column; width:100%; max-width:920px; margin-top:28px; gap:14px; }
+  .fm-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 26px; animation:fadeUp 0.5s ease both; }
+  .fm-card:nth-child(1){animation-delay:0.05s} .fm-card:nth-child(2){animation-delay:0.15s}
+  .fm-card:nth-child(3){animation-delay:0.25s} .fm-card:nth-child(4){animation-delay:0.35s}
+  .fm-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+  .fm-name { font-family:var(--mono); font-size:14px; color:var(--accent); font-weight:500; }
+  .fm-tag { font-family:var(--mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
+  .fm-tag.req { background:rgba(217,112,112,0.12); color:var(--red); }
+  .fm-tag.opt { background:rgba(122,175,207,0.12); color:var(--blue); }
+  .fm-constraint { font-size:11px; color:var(--muted); flex:1; min-width:200px; line-height:1.4; }
+  .fm-example { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-family:var(--mono); font-size:12px; color:rgba(240,237,232,0.85); white-space:pre-wrap; word-break:break-word; line-height:1.55; overflow-x:auto; }
+  .fm-key { color:var(--accent2); }
+  .fm-val { color:rgba(240,237,232,0.85); }
+  .fm-str { color:var(--green); }
+
+  /* SLIDE 14 — Progressive disclosure + File references */
+  .pd-layout { display:grid; grid-template-columns:1fr 1fr; gap:22px; width:100%; max-width:960px; margin-top:28px; align-items:start; }
+  .pd-col-title { font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:block; }
+  .pd-ladder { display:flex; flex-direction:column; gap:10px; animation:fadeUp 0.5s ease both; animation-delay:0.05s; }
+  .pd-step { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px; position:relative; transition:border-color 0.2s; }
+  .pd-step:hover { border-color:rgba(255,107,53,0.25); }
+  .pd-step-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .pd-step-num { font-family:var(--mono); font-size:10px; color:var(--accent); background:rgba(255,107,53,0.1); border:1px solid rgba(255,107,53,0.25); border-radius:20px; padding:2px 8px; }
+  .pd-step h3 { font-size:13px; font-weight:600; }
+  .pd-step-tokens { font-family:var(--mono); font-size:10px; color:var(--muted); margin-left:auto; }
+  .pd-step p { font-size:11px; line-height:1.55; color:rgba(240,237,232,0.65); padding-left:2px; }
+  .pd-step.pd-step-1 { border-left:2px solid var(--accent); }
+  .pd-step.pd-step-2 { border-left:2px solid var(--accent2); margin-left:14px; }
+  .pd-step.pd-step-3 { border-left:2px solid var(--border2); margin-left:28px; }
+  .pd-fr { animation:fadeUp 0.5s ease both; animation-delay:0.18s; }
+  .pd-fr-code { background:var(--bg); border:1px solid var(--border2); border-radius:12px; padding:18px 20px; font-family:var(--mono); font-size:12px; line-height:1.7; color:rgba(240,237,232,0.85); white-space:pre-wrap; }
+  .pd-fr-comment { color:var(--muted); }
+  .pd-fr-link { color:var(--accent); }
+  .pd-fr-path { color:var(--accent2); }
+  .pd-fr-rule { margin-top:14px; background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); border-radius:10px; padding:12px 16px; font-size:12px; color:rgba(240,237,232,0.78); line-height:1.55; }
+
+  /* SLIDE 9 — Combinar todo */
+  .combo-layout { display:flex; flex-direction:column; width:100%; max-width:900px; margin-top:32px; gap:20px; }
+  .combo-grid { display:flex; align-items:center; gap:0; width:100%; animation:fadeUp 0.5s ease both; animation-delay:0.05s; }
+  .combo-card { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px 16px; text-align:center; transition:border-color 0.2s; }
+  .combo-card:hover { border-color:rgba(255,107,53,0.25); }
+  .combo-skills { border-color:rgba(255,107,53,0.3); background:rgba(255,107,53,0.04); }
+  .combo-icon { font-size:24px; display:block; margin-bottom:10px; }
+  .combo-card h3 { font-size:14px; margin-bottom:6px; }
+  .combo-card p { font-size:11px; line-height:1.5; }
+  .combo-connector { font-family:var(--display); font-size:22px; color:var(--muted); padding:0 10px; flex-shrink:0; }
+  .combo-result { display:flex; align-items:center; gap:20px; background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); border-radius:14px; padding:24px 28px; animation:fadeUp 0.5s ease both; animation-delay:0.22s; }
+  .combo-eq { font-family:var(--display); font-size:36px; font-weight:800; color:var(--accent); flex-shrink:0; }
+  .combo-final h3 { font-size:18px; margin-bottom:8px; }
+  .combo-final p { font-size:13px; line-height:1.65; }
+</style>
+</head>
+<body>
+
+<div class="key-hint">
+  <span class="key">←</span>
+  <span class="key">→</span>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 0: COVER -->
+  <div class="slide active" id="s0">
+    <div class="eyebrow">Skills Course</div>
+    <h1>Agentic <span class="accent">Skills</span></h1>
+    <div class="divider"></div>
+    <p class="subtitle">Cómo extender y automatizar agentes con capacidades especializadas</p>
+    <div class="author-line">
+      <div class="author-avatar">AL</div>
+      <div class="author-info">
+        <div class="author-name">Alexys Lozada</div>
+        <div class="author-role">CTO at EDteam</div>
+      </div>
+      <div class="edteam-badge">ED<span style="color:var(--text);opacity:0.4">team</span></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 1: ¿Qué son las Skills? -->
+  <div class="slide" id="s1">
+    <h2>¿Qué son las <span class="accent">Skills</span>?</h2>
+    <div class="skills-def">
+      <div class="skills-def-main">
+        <p>Las <span class="accent" style="font-weight:600">skills</span> son capacidades especializadas que se agregan a Claude Code para extender su funcionalidad. Son instrucciones y contexto <strong style="color:var(--text)">pre-empaquetado</strong> que le dicen al agente exactamente cómo realizar tareas específicas.</p>
+      </div>
+      <div class="skills-examples">
+        <div class="skill-pill">
+          <span class="pill-icon">🎨</span>
+          <span class="pill-label">edslides</span>
+          <span class="pill-desc">Crea presentaciones HTML</span>
+        </div>
+        <div class="skill-pill">
+          <span class="pill-icon">🔍</span>
+          <span class="pill-label">review</span>
+          <span class="pill-desc">Revisa pull requests</span>
+        </div>
+        <div class="skill-pill">
+          <span class="pill-icon">⚙️</span>
+          <span class="pill-label">update-config</span>
+          <span class="pill-desc">Configura hooks y settings</span>
+        </div>
+        <div class="skill-pill">
+          <span class="pill-icon">🛡️</span>
+          <span class="pill-label">security-review</span>
+          <span class="pill-desc">Audita vulnerabilidades</span>
+        </div>
+        <div class="skill-pill">
+          <span class="pill-icon">🔧</span>
+          <span class="pill-label">gopls</span>
+          <span class="pill-desc">Inteligencia para Go</span>
+        </div>
+        <div class="skill-pill">
+          <span class="pill-icon">📦</span>
+          <span class="pill-label">init</span>
+          <span class="pill-desc">Documenta el codebase</span>
+        </div>
+      </div>
+    </div>
+    <div class="insight">Se invocan con <span class="mono accent">/nombre-de-la-skill</span> directamente en la conversación con el agente.</div>
+  </div>
+
+  <!-- SLIDE 2: ¿Qué son las Agent Skills? -->
+  <div class="slide" id="s2">
+    <h2>¿Qué son las <span class="accent">Agent Skills</span>?</h2>
+    <div class="agent-hero">
+      <p>Las <span class="accent" style="font-weight:600">Agent Skills</span> son skills avanzadas que permiten a Claude actuar como un <strong style="color:var(--text)">agente autónomo</strong>. Ejecutan tareas complejas de múltiples pasos, coordinan herramientas, toman decisiones y completan workflows <em>end-to-end</em> sin intervención manual constante.</p>
+    </div>
+    <div class="agent-pillars">
+      <div class="pillar">
+        <span class="pillar-icon">🧠</span>
+        <h3>Autonomía</h3>
+        <p>Toma decisiones y adapta su plan según el contexto</p>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🔗</span>
+        <h3>Multi-paso</h3>
+        <p>Encadena herramientas y acciones en secuencia lógica</p>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">⚡</span>
+        <h3>Paralelismo</h3>
+        <p>Coordina subtareas independientes de forma concurrente</p>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🎯</span>
+        <h3>End-to-End</h3>
+        <p>Completa workflows completos sin intervención continua</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: ¿Qué soluciona? -->
+  <div class="slide" id="s3">
+    <h2>¿Qué <span class="accent">soluciona</span>?</h2>
+    <div class="soluciona-wrap">
+      <div class="sol-problem">
+        <div class="sol-label mono">sin skills</div>
+        <p>Cada vez que inicias una conversación, tienes que <strong style="color:var(--text)">explicarle de nuevo</strong> al agente cómo quieres que realice la tarea: el formato, el tono, los pasos, las reglas…</p>
+        <div class="sol-repeat">
+          <span class="rep-bubble">"Hazlo así…"</span>
+          <span class="rep-bubble">"Recuerda que…"</span>
+          <span class="rep-bubble">"Como te dije…"</span>
+        </div>
+      </div>
+      <div class="sol-arrow">→</div>
+      <div class="sol-solution">
+        <div class="sol-label mono accent">con skills</div>
+        <p>El agente <strong style="color:var(--text)">ya sabe</strong> cómo realizar la tarea de manera efectiva. El conocimiento está empaquetado en la skill: no hay que repetirlo en cada llamado.</p>
+        <div class="sol-benefit">
+          <span class="ben-icon">✓</span>
+          <span>Consistencia en cada ejecución</span>
+        </div>
+        <div class="sol-benefit">
+          <span class="ben-icon">✓</span>
+          <span>Cero fricción al invocar</span>
+        </div>
+        <div class="sol-benefit">
+          <span class="ben-icon">✓</span>
+          <span>Conocimiento reutilizable y compartible</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: ¿Cómo se usa? -->
+  <div class="slide" id="s4">
+    <h2>¿Cómo se <span class="accent">usa</span>?</h2>
+    <div class="como-wrap">
+      <div class="como-main">
+        <div class="como-row">
+          <div class="como-icon mono">📋</div>
+          <div>
+            <h3>La descripción decide todo</h3>
+            <p>El agente lee la descripción de cada skill y determina automáticamente si debe usarla para resolver la tarea. No hace falta invocarla manualmente.</p>
+          </div>
+        </div>
+        <div class="como-divider"></div>
+        <div class="como-row">
+          <div class="como-icon mono">⚡</div>
+          <div>
+            <h3>Se carga bajo demanda</h3>
+            <p>El contenido de la skill solo se inyecta al contexto cuando el agente decide que la necesita. Si no es relevante para la tarea, no se carga.</p>
+          </div>
+        </div>
+      </div>
+      <div class="como-tokens">
+        <div class="tokens-label mono">ahorro de tokens</div>
+        <div class="tokens-compare">
+          <div class="tok-item tok-heavy">
+            <span class="tok-file mono">CLAUDE.md</span>
+            <span class="tok-bar-wrap"><span class="tok-bar tok-bar-full"></span></span>
+            <span class="tok-desc">Siempre en contexto</span>
+          </div>
+          <div class="tok-item tok-heavy">
+            <span class="tok-file mono">agents.md</span>
+            <span class="tok-bar-wrap"><span class="tok-bar tok-bar-full"></span></span>
+            <span class="tok-desc">Siempre en contexto</span>
+          </div>
+          <div class="tok-item tok-light">
+            <span class="tok-file mono accent">skill</span>
+            <span class="tok-bar-wrap"><span class="tok-bar tok-bar-partial"></span></span>
+            <span class="tok-desc">Solo cuando se necesita</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Diferencias — introducción -->
+  <div class="slide" id="s5">
+    <h2>Skills vs. otras <span class="accent">tools</span> del agente</h2>
+    <div class="diff-intro-grid diff-intro-grid-5">
+      <div class="diff-tool-card">
+        <span class="diff-icon mono">📄</span>
+        <div class="diff-label mono">CLAUDE.md / Agents.md</div>
+        <p>Reglas permanentes del proyecto</p>
+      </div>
+      <div class="diff-tool-card">
+        <span class="diff-icon mono">🤖</span>
+        <div class="diff-label mono">SubAgentes</div>
+        <p>Ejecutores de tareas aisladas</p>
+      </div>
+      <div class="diff-tool-card">
+        <span class="diff-icon mono">🪝</span>
+        <div class="diff-label mono">Hooks</div>
+        <p>Disparadores por eventos</p>
+      </div>
+      <div class="diff-tool-card">
+        <span class="diff-icon mono">💬</span>
+        <div class="diff-label mono">Comandos</div>
+        <p>Invocación explícita del usuario</p>
+      </div>
+      <div class="diff-tool-card diff-tool-highlight">
+        <span class="diff-icon mono accent">⚡</span>
+        <div class="diff-label mono accent">Skills</div>
+        <p>Capacidades bajo demanda</p>
+      </div>
+    </div>
+    <div class="insight">Cada tool tiene un rol distinto — juntos forman un <span class="accent">workflow agentic</span> completo.</div>
+  </div>
+
+  <!-- SLIDE 6: CLAUDE.md / Agents.md -->
+  <div class="slide" id="s6">
+    <h2><span class="accent">CLAUDE.md</span> y Agents.md</h2>
+    <div class="bvs-wrap" style="margin-top:36px;">
+      <div class="bvs-col">
+        <div class="bvs-header">
+          <span class="bvs-tag sk">CLAUDE.md / Agents.md</span>
+          <p class="bvs-when">Reglas del proyecto, siempre presentes</p>
+        </div>
+        <ul class="bvs-list">
+          <li><span class="bvs-check green">✓</span> Se cargan en <strong style="color:var(--text)">todas</strong> las conversaciones automáticamente</li>
+          <li><span class="bvs-check green">✓</span> Permanecen en el contexto durante toda la sesión</li>
+          <li><span class="bvs-check green">✓</span> Definen reglas, convenciones y restricciones del proyecto</li>
+          <li><span class="bvs-check muted">~</span> Consumen tokens en cada conversación, sin excepción</li>
+        </ul>
+      </div>
+      <div class="bvs-divider"><span>vs</span></div>
+      <div class="bvs-col">
+        <div class="bvs-header">
+          <span class="bvs-tag gold">Skills</span>
+          <p class="bvs-when">Capacidades especializadas, bajo demanda</p>
+        </div>
+        <ul class="bvs-list">
+          <li><span class="bvs-check blue">✓</span> Se cargan <strong style="color:var(--text)">solo cuando la tarea las requiere</strong></li>
+          <li><span class="bvs-check blue">✓</span> El agente infiere cuándo aplicarlas según el contexto</li>
+          <li><span class="bvs-check blue">✓</span> Empaquetan conocimiento experto para tareas específicas</li>
+          <li><span class="bvs-check muted">~</span> No están disponibles si el agente no las detecta como relevantes</li>
+        </ul>
+      </div>
+    </div>
+    <div class="bvs-note">Los archivos <span class="mono accent">CLAUDE.md</span> son el <em>contexto base</em>; las skills son el <em>conocimiento especializado</em> que se activa según la necesidad.</div>
+  </div>
+
+  <!-- SLIDE 7: SubAgentes -->
+  <div class="slide" id="s7">
+    <h2>Sub<span class="accent">Agentes</span></h2>
+    <div class="subagent-layout">
+      <div class="sa-hero">
+        <p>Los <span class="accent" style="font-weight:600">SubAgentes</span> son instancias de Claude que ejecutan trabajos de forma <strong style="color:var(--text)">aislada e independiente</strong>. Son los encargados de ejecutar las skills cuando el agente principal los invoca.</p>
+      </div>
+      <div class="sa-cards">
+        <div class="sa-card">
+          <div class="sa-num">01</div>
+          <div>
+            <h3>Contexto aislado</h3>
+            <p>Cada subagente tiene su propio contexto. No comparte estado con el agente principal, evitando interferencias.</p>
+          </div>
+        </div>
+        <div class="sa-card">
+          <div class="sa-num">02</div>
+          <div>
+            <h3>Ejecución paralela</h3>
+            <p>Múltiples subagentes pueden correr simultáneamente, acelerando workflows complejos con tareas independientes.</p>
+          </div>
+        </div>
+        <div class="sa-card">
+          <div class="sa-num">03</div>
+          <div>
+            <h3>Ejecutores de skills</h3>
+            <p>Cuando el agente principal invoca una skill, delega la ejecución a un subagente especializado para completarla.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Hooks -->
+  <div class="slide" id="s8">
+    <h2><span class="accent">Hooks</span></h2>
+    <div class="hooks-layout">
+      <div class="hooks-def">
+        <p>Los <span class="accent" style="font-weight:600">hooks</span> son comandos shell que se ejecutan automáticamente en respuesta a <strong style="color:var(--text)">eventos del sistema</strong>. A diferencia de las skills, no las infiere el agente: se disparan por el harness.</p>
+      </div>
+      <div class="hooks-events">
+        <div class="hook-event">
+          <span class="hook-trigger mono">PostToolUse</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-desc">Luego de llamar una herramienta (Bash, Edit, Write…)</span>
+        </div>
+        <div class="hook-event">
+          <span class="hook-trigger mono">Stop</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-desc">Al terminar de procesar un prompt completo</span>
+        </div>
+        <div class="hook-event">
+          <span class="hook-trigger mono">PreToolUse</span>
+          <span class="hook-arrow">→</span>
+          <span class="hook-desc">Antes de ejecutar cualquier herramienta</span>
+        </div>
+      </div>
+      <div class="hooks-vs-skills">
+        <div class="hvs-item">
+          <span class="hvs-tag mono">Hooks</span>
+          <span class="hvs-text">Se disparan por <strong style="color:var(--text)">eventos</strong> — deterministas, siempre ocurren si la condición se cumple</span>
+        </div>
+        <div class="hvs-divider">|</div>
+        <div class="hvs-item">
+          <span class="hvs-tag accent mono">Skills</span>
+          <span class="hvs-text">Se <strong style="color:var(--text)">infieren</strong> en la conversación — el agente decide cuándo son relevantes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Comandos personalizados -->
+  <div class="slide" id="s9">
+    <h2>Comandos <span class="accent">personalizados</span></h2>
+    <div class="bvs-wrap" style="margin-top:36px;">
+      <div class="bvs-col">
+        <div class="bvs-header">
+          <span class="bvs-tag bmad">Comandos personalizados</span>
+          <p class="bvs-when">Invocación explícita por el usuario</p>
+        </div>
+        <ul class="bvs-list">
+          <li><span class="bvs-check blue">✓</span> Se ejecutan con <span class="mono" style="color:var(--blue)">/nombre-del-comando</span> de forma explícita</li>
+          <li><span class="bvs-check blue">✓</span> El usuario tiene control total sobre cuándo se ejecutan</li>
+          <li><span class="bvs-check red">✕</span> Los agentes <strong style="color:var(--text)">no pueden invocarlos</strong> — solo el usuario humano</li>
+          <li><span class="bvs-check muted">~</span> Útiles para flujos manuales y comandos de uso frecuente</li>
+        </ul>
+      </div>
+      <div class="bvs-divider"><span>vs</span></div>
+      <div class="bvs-col">
+        <div class="bvs-header">
+          <span class="bvs-tag gold">Skills</span>
+          <p class="bvs-when">Invocación inferencial por el agente</p>
+        </div>
+        <ul class="bvs-list">
+          <li><span class="bvs-check green">✓</span> El agente las detecta e invoca <strong style="color:var(--text)">sin intervención del usuario</strong></li>
+          <li><span class="bvs-check green">✓</span> Se activan por inferencia según el contexto de la tarea</li>
+          <li><span class="bvs-check green">✓</span> Los agentes pueden llamarlas dentro de workflows automáticos</li>
+          <li><span class="bvs-check muted">~</span> El usuario también puede invocarlas con <span class="mono accent">/nombre</span> si lo desea</li>
+        </ul>
+      </div>
+    </div>
+    <div class="bvs-note">La diferencia clave: los comandos personalizados son <strong style="color:var(--text)">herramientas del usuario</strong>; las skills son <span class="accent">herramientas del agente</span>.</div>
+  </div>
+
+  <!-- SLIDE 10: Lo mejor — Combinar todo -->
+  <div class="slide" id="s10">
+    <h2>Lo mejor: <span class="accent">combinar todo</span></h2>
+    <div class="combo-layout">
+      <div class="combo-grid">
+        <div class="combo-card combo-claudemd">
+          <span class="combo-icon mono">📄</span>
+          <h3>CLAUDE.md</h3>
+          <p>Contexto base y reglas siempre presentes</p>
+        </div>
+        <div class="combo-connector">+</div>
+        <div class="combo-card combo-skills">
+          <span class="combo-icon mono accent">⚡</span>
+          <h3>Skills</h3>
+          <p>Conocimiento experto cargado bajo demanda</p>
+        </div>
+        <div class="combo-connector">+</div>
+        <div class="combo-card combo-subagents">
+          <span class="combo-icon mono">🤖</span>
+          <h3>SubAgentes</h3>
+          <p>Ejecución paralela en contextos aislados</p>
+        </div>
+        <div class="combo-connector">+</div>
+        <div class="combo-card combo-hooks">
+          <span class="combo-icon mono">🪝</span>
+          <h3>Hooks</h3>
+          <p>Automatización determinista por eventos</p>
+        </div>
+      </div>
+      <div class="combo-result">
+        <span class="combo-eq">=</span>
+        <div class="combo-final">
+          <h3>Workflow <span class="accent">agentic</span> completo</h3>
+          <p>Un sistema donde el contexto, el conocimiento, la ejecución y la automatización trabajan juntos de forma coherente y eficiente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: EDquiz -->
+  <div class="slide" id="s11">
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <h2>ED<span class="accent">quiz</span></h2>
+        <p>Una pregunta a la vez · selecciona y avanza</p>
+      </div>
+
+      <div class="quiz-progress">
+        <div class="qp-dot current" id="qp1"></div>
+        <div class="qp-dot" id="qp2"></div>
+        <div class="qp-dot" id="qp3"></div>
+        <div class="qp-dot" id="qp4"></div>
+        <div class="qp-dot" id="qp5"></div>
+      </div>
+
+      <!-- Pregunta 1 -->
+      <div class="question active-q" id="q1">
+        <span class="q-number-badge">PREGUNTA 01 / 05</span>
+        <div class="q-text-box">
+          <p>¿Cuál es la diferencia principal entre una skill y un archivo CLAUDE.md?</p>
+        </div>
+        <div class="options-grid">
+          <div class="option" onclick="answer(1,'a')"><span class="opt-letter">A</span> CLAUDE.md se carga solo cuando el agente lo necesita; la skill siempre está en contexto</div>
+          <div class="option" onclick="answer(1,'b')"><span class="opt-letter">B</span> CLAUDE.md siempre está en el contexto; la skill se carga bajo demanda según la tarea</div>
+          <div class="option" onclick="answer(1,'c')"><span class="opt-letter">C</span> Ambos se cargan de la misma forma, solo cambia su contenido</div>
+          <div class="option" onclick="answer(1,'d')"><span class="opt-letter">D</span> Las skills reemplazan completamente a los archivos CLAUDE.md</div>
+        </div>
+        <div class="q-feedback" id="f1">CLAUDE.md permanece en contexto en todas las conversaciones; las skills solo se inyectan cuando el agente infiere que son relevantes para la tarea.</div>
+        <div class="quiz-nav"><button class="btn-next" id="btn1" onclick="nextQuestion(2)">Siguiente pregunta →</button></div>
+      </div>
+
+      <!-- Pregunta 2 -->
+      <div class="question" id="q2">
+        <span class="q-number-badge">PREGUNTA 02 / 05</span>
+        <div class="q-text-box">
+          <p>¿Qué tool del agente se dispara automáticamente al ocurrir un evento del sistema, como terminar de procesar un prompt?</p>
+        </div>
+        <div class="options-grid">
+          <div class="option" onclick="answer(2,'a')"><span class="opt-letter">A</span> Una skill</div>
+          <div class="option" onclick="answer(2,'b')"><span class="opt-letter">B</span> Un subagente</div>
+          <div class="option" onclick="answer(2,'c')"><span class="opt-letter">C</span> Un comando personalizado</div>
+          <div class="option" onclick="answer(2,'d')"><span class="opt-letter">D</span> Un hook</div>
+        </div>
+        <div class="q-feedback" id="f2">Los hooks se ejecutan en respuesta a eventos del sistema (PostToolUse, Stop, PreToolUse…) de forma determinista, sin intervención del agente ni del usuario.</div>
+        <div class="quiz-nav"><button class="btn-next" id="btn2" onclick="nextQuestion(3)">Siguiente pregunta →</button></div>
+      </div>
+
+      <!-- Pregunta 3 -->
+      <div class="question" id="q3">
+        <span class="q-number-badge">PREGUNTA 03 / 05</span>
+        <div class="q-text-box">
+          <p>Un agente delega parte del trabajo a otra instancia de Claude con contexto propio e independiente. ¿Qué tool está usando?</p>
+        </div>
+        <div class="options-grid">
+          <div class="option" onclick="answer(3,'a')"><span class="opt-letter">A</span> Un hook</div>
+          <div class="option" onclick="answer(3,'b')"><span class="opt-letter">B</span> Una skill</div>
+          <div class="option" onclick="answer(3,'c')"><span class="opt-letter">C</span> Un subagente</div>
+          <div class="option" onclick="answer(3,'d')"><span class="opt-letter">D</span> Un comando personalizado</div>
+        </div>
+        <div class="q-feedback" id="f3">Los subagentes son instancias de Claude con contexto aislado. Son los encargados de ejecutar las skills y pueden correr en paralelo.</div>
+        <div class="quiz-nav"><button class="btn-next" id="btn3" onclick="nextQuestion(4)">Siguiente pregunta →</button></div>
+      </div>
+
+      <!-- Pregunta 4 -->
+      <div class="question" id="q4">
+        <span class="q-number-badge">PREGUNTA 04 / 05</span>
+        <div class="q-text-box">
+          <p>¿Cuál de estas afirmaciones sobre los comandos personalizados es verdadera?</p>
+        </div>
+        <div class="options-grid">
+          <div class="option" onclick="answer(4,'a')"><span class="opt-letter">A</span> Los agentes pueden invocarlos dentro de un workflow automático</div>
+          <div class="option" onclick="answer(4,'b')"><span class="opt-letter">B</span> Se activan por inferencia igual que las skills</div>
+          <div class="option" onclick="answer(4,'c')"><span class="opt-letter">C</span> Solo el usuario humano puede invocarlos de forma explícita</div>
+          <div class="option" onclick="answer(4,'d')"><span class="opt-letter">D</span> Reemplazan a las skills cuando el agente no puede inferirlas</div>
+        </div>
+        <div class="q-feedback" id="f4">Los comandos personalizados son herramientas del usuario: requieren invocación explícita con /nombre y los agentes no pueden llamarlos por su cuenta.</div>
+        <div class="quiz-nav"><button class="btn-next" id="btn4" onclick="nextQuestion(5)">Siguiente pregunta →</button></div>
+      </div>
+
+      <!-- Pregunta 5 -->
+      <div class="question" id="q5">
+        <span class="q-number-badge">PREGUNTA 05 / 05</span>
+        <div class="q-text-box">
+          <p>¿Cuál es el principal beneficio de usar skills en lugar de repetir instrucciones en cada conversación?</p>
+        </div>
+        <div class="options-grid">
+          <div class="option" onclick="answer(5,'a')"><span class="opt-letter">A</span> Las skills evitan que el agente use herramientas externas</div>
+          <div class="option" onclick="answer(5,'b')"><span class="opt-letter">B</span> El conocimiento queda empaquetado: consistencia en cada ejecución sin repetir instrucciones</div>
+          <div class="option" onclick="answer(5,'c')"><span class="opt-letter">C</span> Las skills aumentan el número de tokens disponibles en el contexto</div>
+          <div class="option" onclick="answer(5,'d')"><span class="opt-letter">D</span> Permiten al agente ejecutar código en el servidor sin permisos</div>
+        </div>
+        <div class="q-feedback" id="f5">Las skills empaquetan instrucciones y contexto especializado, garantizando consistencia en cada ejecución sin necesidad de repetir el mismo prompt en cada conversación.</div>
+        <div class="quiz-nav"><button class="btn-next" id="btn5" onclick="showScore()">Ver resultado →</button></div>
+      </div>
+
+      <!-- Score final -->
+      <div class="quiz-score" id="quiz-score">
+        <div class="score-trophy" id="score-trophy">🏆</div>
+        <div class="score-num" id="score-num">0/5</div>
+        <div class="score-label">respuestas correctas</div>
+        <div class="score-msg" id="score-msg"></div>
+        <button class="btn-reset" onclick="resetQuiz()">Intentar de nuevo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: Directory structure -->
+  <div class="slide" id="s12">
+    <h2>Directory <span class="accent">structure</span></h2>
+    <div class="dir-layout">
+      <div class="dir-tree">
+<span class="tree-comment"># Ubicación según el agente: .claude/skills/ · .codex/skills/ · .opencode/skills/ · etc.</span>
+<span class="tree-root">skill-name/</span>
+├── <span class="tree-required">SKILL.md</span>              <span class="tree-comment"># <span class="tree-required-tag">Required</span>: metadata + instructions</span>
+├── <span class="tree-optional">scripts/</span>              <span class="tree-comment"># <span class="tree-optional-tag">Optional</span>: executable code</span>
+│   └── process.py
+├── <span class="tree-optional">references/</span>           <span class="tree-comment"># <span class="tree-optional-tag">Optional</span>: documentation</span>
+│   └── documentation.md
+├── <span class="tree-optional">assets/</span>               <span class="tree-comment"># <span class="tree-optional-tag">Optional</span>: templates, resources</span>
+│   └── image.jpg
+└── ...                   <span class="tree-comment"># Any additional files or directories</span></div>
+      <div class="dir-optional">
+        <div class="dir-opt-card">
+          <span class="dir-opt-name">scripts/</span>
+          <div class="dir-opt-body">
+            <h3>Código ejecutable</h3>
+            <p>Scripts que el agente puede correr. Auto-contenidos, con errores claros y manejo de edge cases. Soporta Python, Bash, JavaScript…</p>
+          </div>
+        </div>
+        <div class="dir-opt-card">
+          <span class="dir-opt-name">references/</span>
+          <div class="dir-opt-body">
+            <h3>Documentación adicional</h3>
+            <p>Archivos que el agente lee bajo demanda: <span class="mono">REFERENCE.md</span>, <span class="mono">FORMS.md</span>, o documentos de dominio. Mantenlos pequeños y enfocados.</p>
+          </div>
+        </div>
+        <div class="dir-opt-card">
+          <span class="dir-opt-name">assets/</span>
+          <div class="dir-opt-body">
+            <h3>Recursos estáticos</h3>
+            <p>Templates de documentos o configuración, imágenes (diagramas, ejemplos) y archivos de datos (schemas, lookup tables).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: Frontmatter — propiedades obligatorias -->
+  <div class="slide" id="s13">
+    <h2>Frontmatter · <span class="accent">obligatorias</span></h2>
+    <div class="fm-layout">
+      <div class="fm-card">
+        <div class="fm-head">
+          <span class="fm-name">name</span>
+          <span class="fm-tag req">Required</span>
+          <span class="fm-constraint">Máx. 64 caracteres. Solo minúsculas <span class="mono">a-z</span>, números y guiones. No empieza ni termina en <span class="mono">-</span>, ni dos guiones seguidos. Debe coincidir con el nombre del directorio.</span>
+        </div>
+        <div class="fm-example"><span class="fm-key">name</span>: <span class="fm-val">pdf-processing</span></div>
+      </div>
+      <div class="fm-card">
+        <div class="fm-head">
+          <span class="fm-name">description</span>
+          <span class="fm-tag req">Required</span>
+          <span class="fm-constraint">Máx. 1024 caracteres. Describe <strong style="color:var(--text)">qué hace</strong> la skill y <strong style="color:var(--text)">cuándo usarla</strong>. Incluye keywords que ayuden al agente a identificar tareas relevantes.</span>
+        </div>
+        <div class="fm-example"><span class="fm-key">description</span>: <span class="fm-val">Extracts text and tables from PDF files, fills PDF forms, and merges multiple PDFs. Use when working with PDF documents or when the user mentions PDFs, forms, or document extraction.</span></div>
+      </div>
+    </div>
+    <div class="insight" style="margin-top:24px;">Una buena <span class="accent">description</span> es lo único que decide si tu skill se activa o no.</div>
+  </div>
+
+  <!-- SLIDE 14: Frontmatter — propiedades opcionales -->
+  <div class="slide" id="s14">
+    <h2>Frontmatter · <span class="accent">opcionales</span></h2>
+    <div class="fm-layout">
+      <div class="fm-card">
+        <div class="fm-head">
+          <span class="fm-name">license</span>
+          <span class="fm-tag opt">Optional</span>
+          <span class="fm-constraint">Nombre de la licencia o referencia a un archivo de licencia incluido. Recomendado mantenerlo corto.</span>
+        </div>
+        <div class="fm-example"><span class="fm-key">license</span>: <span class="fm-val">Proprietary. LICENSE.txt has complete terms</span></div>
+      </div>
+      <div class="fm-card">
+        <div class="fm-head">
+          <span class="fm-name">compatibility</span>
+          <span class="fm-tag opt">Optional</span>
+          <span class="fm-constraint">Máx. 500 caracteres. Solo si tu skill tiene requisitos de entorno: producto destino, paquetes del sistema, acceso a red…</span>
+        </div>
+        <div class="fm-example"><span class="fm-key">compatibility</span>: <span class="fm-val">Requires git, docker, jq, and access to the internet</span></div>
+      </div>
+      <div class="fm-card">
+        <div class="fm-head">
+          <span class="fm-name">metadata</span>
+          <span class="fm-tag opt">Optional</span>
+          <span class="fm-constraint">Mapa de claves y valores string para propiedades extra no definidas por la spec. Usa nombres de claves únicos para evitar colisiones.</span>
+        </div>
+        <div class="fm-example"><span class="fm-key">metadata</span>:
+  <span class="fm-key">author</span>: <span class="fm-val">example-org</span>
+  <span class="fm-key">version</span>: <span class="fm-str">"1.0"</span></div>
+      </div>
+      <div class="fm-card">
+        <div class="fm-head">
+          <span class="fm-name">allowed-tools</span>
+          <span class="fm-tag opt">Optional</span>
+          <span class="fm-constraint">Lista separada por espacios de herramientas pre-aprobadas que la skill puede usar. <em>Experimental</em> — el soporte varía entre agentes.</span>
+        </div>
+        <div class="fm-example"><span class="fm-key">allowed-tools</span>: <span class="fm-val">Bash(git:*) Bash(jq:*) Read</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15: Progressive disclosure + File references -->
+  <div class="slide" id="s15">
+    <h2>Progressive <span class="accent">disclosure</span> &amp; file references</h2>
+    <div class="pd-layout">
+      <div>
+        <span class="pd-col-title">Progressive disclosure</span>
+        <div class="pd-ladder">
+          <div class="pd-step pd-step-1">
+            <div class="pd-step-head">
+              <span class="pd-step-num">01</span>
+              <h3>Metadata</h3>
+              <span class="pd-step-tokens">~100 tokens</span>
+            </div>
+            <p><span class="mono">name</span> y <span class="mono">description</span> se cargan al inicio para <strong style="color:var(--text)">todas</strong> las skills.</p>
+          </div>
+          <div class="pd-step pd-step-2">
+            <div class="pd-step-head">
+              <span class="pd-step-num">02</span>
+              <h3>Instructions</h3>
+              <span class="pd-step-tokens">&lt; 5000 tokens</span>
+            </div>
+            <p>El cuerpo de <span class="mono">SKILL.md</span> se carga cuando la skill se activa.</p>
+          </div>
+          <div class="pd-step pd-step-3">
+            <div class="pd-step-head">
+              <span class="pd-step-num">03</span>
+              <h3>Resources</h3>
+              <span class="pd-step-tokens">on demand</span>
+            </div>
+            <p>Archivos en <span class="mono">scripts/</span>, <span class="mono">references/</span> o <span class="mono">assets/</span> solo cuando se necesitan.</p>
+          </div>
+        </div>
+      </div>
+      <div class="pd-fr">
+        <span class="pd-col-title">File references</span>
+        <div class="pd-fr-code"><span class="pd-fr-comment"># Rutas relativas desde la raíz de la skill</span>
+
+See [<span class="pd-fr-link">the reference guide</span>](<span class="pd-fr-path">references/REFERENCE.md</span>) for details.
+
+Run the extraction script:
+<span class="pd-fr-path">scripts/extract.py</span></div>
+        <div class="pd-fr-rule"><strong style="color:var(--accent)">Regla:</strong> mantén las referencias a <strong style="color:var(--text)">un nivel de profundidad</strong> desde <span class="mono">SKILL.md</span>. Evita cadenas de referencias anidadas.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="nav">
+  <button onclick="prev()">← anterior</button>
+  <div class="progress-dots" id="dots"></div>
+  <span class="counter" id="counter">1 / 16</span>
+  <button onclick="next()">siguiente →</button>
+</div>
+
+<script>
+  const TOTAL = 16;
+  let current = 0;
+
+  function buildDots() {
+    const d = document.getElementById('dots');
+    for (let i = 0; i < TOTAL; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goTo(i);
+      d.appendChild(dot);
+    }
+  }
+
+  function goTo(n) {
+    const slides = document.querySelectorAll('.slide');
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    setTimeout(() => slides[current].classList.remove('exit'), 400);
+    current = n;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + TOTAL;
+  }
+
+  function next() { if (current < TOTAL - 1) goTo(current + 1); }
+  function prev() { if (current > 0) goTo(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prev();
+  });
+
+  buildDots();
+
+  // ── Quiz ──
+  const QUIZ_ANSWERS = { 1:'b', 2:'d', 3:'c', 4:'c', 5:'b' };
+  const QUIZ_TOTAL = 5;
+  let quizCorrect = 0;
+  let quizAnswered = {};
+
+  function answer(qn, choice) {
+    if (quizAnswered[qn]) return;
+    quizAnswered[qn] = choice;
+    const q = document.getElementById('q' + qn);
+    const correct = QUIZ_ANSWERS[qn];
+    q.querySelectorAll('.option').forEach((opt, i) => {
+      opt.classList.add('locked');
+      const letter = ['a','b','c','d'][i];
+      if (letter === correct) opt.classList.add('correct');
+      else if (letter === choice) opt.classList.add('wrong');
+    });
+    document.getElementById('f' + qn).classList.add('show');
+    if (choice === correct) quizCorrect++;
+    // Marcar punto de progreso
+    const dot = document.getElementById('qp' + qn);
+    if (dot) { dot.classList.remove('current'); dot.classList.add('done'); }
+    // Mostrar botón siguiente
+    const btn = document.getElementById('btn' + qn);
+    if (btn) btn.classList.add('show');
+  }
+
+  function nextQuestion(n) {
+    // Ocultar pregunta actual
+    document.getElementById('q' + (n - 1)).classList.remove('active-q');
+    // Mostrar siguiente
+    const next = document.getElementById('q' + n);
+    if (next) {
+      next.classList.add('active-q');
+      // Activar punto de progreso
+      const dot = document.getElementById('qp' + n);
+      if (dot) dot.classList.add('current');
+      document.getElementById('s11').scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function showScore() {
+    document.getElementById('q5').classList.remove('active-q');
+    const sc = document.getElementById('quiz-score');
+    sc.classList.add('show');
+    document.getElementById('score-num').textContent = quizCorrect + '/' + QUIZ_TOTAL;
+    const trophies = ['😓','🤔','👍','🎯','🏆'];
+    document.getElementById('score-trophy').textContent = trophies[quizCorrect];
+    const msgs = [
+      'Repasa el módulo antes de continuar.',
+      'Casi. Revisa los conceptos que fallaste.',
+      '¡Bien! Tienes la base, sigue practicando.',
+      '¡Muy bien! Listo para el siguiente módulo.',
+      '¡Perfecto! Dominaste este módulo.'
+    ];
+    document.getElementById('score-msg').textContent = msgs[quizCorrect];
+    sc.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function resetQuiz() {
+    quizCorrect = 0;
+    quizAnswered = {};
+    for (let i = 1; i <= QUIZ_TOTAL; i++) {
+      const q = document.getElementById('q' + i);
+      q.querySelectorAll('.option').forEach((o, idx) => {
+        o.className = 'option';
+        const letter = ['a','b','c','d'][idx];
+        o.onclick = () => answer(i, letter);
+      });
+      document.getElementById('f' + i).classList.remove('show');
+      const btn = document.getElementById('btn' + i);
+      if (btn) btn.classList.remove('show');
+      const dot = document.getElementById('qp' + i);
+      if (dot) { dot.classList.remove('done', 'current'); }
+      q.classList.remove('active-q');
+    }
+    document.getElementById('qp1').classList.add('current');
+    document.getElementById('q1').classList.add('active-q');
+    document.getElementById('quiz-score').classList.remove('show');
+    document.getElementById('s11').scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
