@@ -119,4 +119,6 @@ Para la mayoría de consultas, el flujo natural es:
 2. **Detallar** con `details --id <id> --append credits` para obtener toda la información incluyendo el reparto
 3. Si el usuario quiere explorar sin un título específico, usar `discover` con los filtros que mencione
 
-Al presentar los resultados, usa siempre el template definido en `assets/movie-response-template.md`.
+## Entrega de resultados
+
+Los resultados siempre van en JSON. Este json lo utilizará otra skill para encargarse del proceso de reporte en pdf.
