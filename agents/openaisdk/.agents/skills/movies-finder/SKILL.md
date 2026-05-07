@@ -1,7 +1,6 @@
 ---
 name: movies-finder
 description: Busca y consulta información de películas usando la API de TMDB (The Movie Database). Usa esta skill cuando el usuario quiera buscar películas por título, filtrar por género, año, puntuación o idioma, obtener detalles completos de una película, buscar por ID externo como IMDB, o descubrir películas con criterios avanzados. Actívate también cuando el usuario mencione "buscar película", "información de película", "filtrar películas", "buscar en TMDB", "buscar por IMDB" o cuando quiera explorar el catálogo de películas con cualquier criterio.
-allowed-tools: Bash(bash .agents/skills/movies-finder/scripts/movies.sh *)
 ---
 
 # Movies Finder
@@ -32,7 +31,7 @@ El token se obtiene en: https://www.themoviedb.org/settings/api (campo "API Read
 El script está en `scripts/movies.sh` dentro de la skill. Ejecútalo siempre desde el directorio raíz del proyecto apuntando a su ruta relativa:
 
 ```bash
-bash .agents/skills/movies-finder/scripts/movies.sh <comando> [opciones]
+bash movies-finder/scripts/movies.sh <comando> [opciones]
 ```
 
 > Para la referencia completa de todos los parámetros, lee: `references/how-to-use-movies-finder.md`
@@ -46,12 +45,12 @@ bash .agents/skills/movies-finder/scripts/movies.sh <comando> [opciones]
 Cuando el usuario dice: *"busca la película Matrix"*, *"encuentra películas de Star Wars"*
 
 ```bash
-bash .agents/skills/movies-finder/scripts/movies.sh search --query "Matrix"
+bash movies-finder/scripts/movies.sh search --query "Matrix"
 ```
 
 Con idioma en español:
 ```bash
-bash .agents/skills/movies-finder/scripts/movies.sh search --query "Matrix" --language es-MX
+bash movies-finder/scripts/movies.sh search --query "Matrix" --language es-MX
 ```
 
 El resultado es un JSON con el array `results`. Cada elemento incluye `id`, `title`, `release_date`, `vote_average` y `overview`.
@@ -64,12 +63,12 @@ Cuando el usuario dice: *"dame los detalles de la película con ID 603"*, *"quie
 
 Primero busca el ID con `search`, luego:
 ```bash
-bash .agents/skills/movies-finder/scripts/movies.sh details --id 603
+bash movies-finder/scripts/movies.sh details --id 603
 ```
 
 Con videos y créditos incluidos:
 ```bash
-bash .agents/skills/movies-finder/scripts/movies.sh details --id 157336 --append videos,credits
+bash movies-finder/scripts/movies.sh details --id 157336 --append videos,credits
 ```
 
 Opciones comunes de `--append`: `videos`, `images`, `credits`, `keywords`, `recommendations`, `similar`, `reviews`
@@ -82,15 +81,15 @@ Cuando el usuario dice: *"películas de acción con puntuación mayor a 8"*, *"c
 
 ```bash
 # Acción (género 28) bien puntuadas
-bash .agents/skills/movies-finder/scripts/movies.sh discover \
+bash movies-finder/scripts/movies.sh discover \
   --with-genres 28 --vote-average-gte 8 --sort-by vote_average.desc
 
 # Películas en español de 2024
-bash .agents/skills/movies-finder/scripts/movies.sh discover \
+bash movies-finder/scripts/movies.sh discover \
   --with-original-language es --primary-release-year 2024
 
 # Disponibles en Netflix (ID 8) en México
-bash .agents/skills/movies-finder/scripts/movies.sh discover \
+bash movies-finder/scripts/movies.sh discover \
   --with-watch-providers 8 --watch-region MX --with-watch-types flatrate
 ```
 
@@ -103,7 +102,7 @@ IDs de géneros frecuentes: Acción=28, Comedia=35, Drama=18, Terror=27, Ciencia
 Cuando el usuario dice: *"busca la película con ID de IMDB tt0816692"*, *"encuentra esta película de IMDB"*
 
 ```bash
-bash .agents/skills/movies-finder/scripts/movies.sh find \
+bash movies-finder/scripts/movies.sh find \
   --id tt0816692 --source imdb_id
 ```
 
@@ -119,4 +118,6 @@ Para la mayoría de consultas, el flujo natural es:
 2. **Detallar** con `details --id <id> --append credits` para obtener toda la información incluyendo el reparto
 3. Si el usuario quiere explorar sin un título específico, usar `discover` con los filtros que mencione
 
-Al presentar los resultados, usa siempre el template definido en `assets/movie-response-template.md`.
+## Entrega de resultados
+
+Los resultados siempre van en JSON. Este json lo utilizará otra skill para encargarse del proceso de reporte en pdf.

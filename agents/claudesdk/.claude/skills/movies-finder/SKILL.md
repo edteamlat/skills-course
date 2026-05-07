@@ -1,7 +1,6 @@
 ---
 name: movies-finder
 description: Busca y consulta información de películas usando la API de TMDB (The Movie Database). Usa esta skill cuando el usuario quiera buscar películas por título, filtrar por género, año, puntuación o idioma, obtener detalles completos de una película, buscar por ID externo como IMDB, o descubrir películas con criterios avanzados. Actívate también cuando el usuario mencione "buscar película", "información de película", "filtrar películas", "buscar en TMDB", "buscar por IMDB" o cuando quiera explorar el catálogo de películas con cualquier criterio.
-allowed-tools: Bash(bash .claude/skills/movies-finder/scripts/movies.sh *)
 ---
 
 # Movies Finder

@@ -1,0 +1,24 @@
+{
+  "title": "Interestelar",
+  "release_date": "2014-11-05",
+  "vote_average": 8.456,
+  "runtime": 169,
+  "genres": [
+    {"id": 12, "name": "Aventura"},
+    {"id": 18, "name": "Drama"},
+    {"id": 878, "name": "Ciencia ficción"}
+  ],
+  "credits": {
+    "cast": [
+      {"name": "Matthew McConaughey", "order": 0},
+      {"name": "Anne Hathaway", "order": 1},
+      {"name": "Jessica Chastain", "order": 2},
+      {"name": "Mackenzie Foy", "order": 3},
+      {"name": "Michael Caine", "order": 4},
+      {"name": "Casey Affleck", "order": 5},
+      {"name": "John Lithgow", "order": 6},
+      {"name": "Wes Bentley", "order": 7}
+    ]
+  },
+  "overview": "En un futuro cercano, la Tierra está al borde del colapso ecológico. Un ex piloto de la NASA y padre de familia, Cooper, es reclutado para liderar una misión a través de un agujero de gusano en busca de un nuevo hogar para la humanidad. La travesía pondrá a prueba los límites del amor, el tiempo y el sacrificio."
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>$titulo</title>
+<style>
+    @page { size: A4; margin: 2.5cm; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                     "Helvetica Neue", Arial, sans-serif;
+        color: #1a1a1a;
+        font-size: 11pt;
+        line-height: 1.55;
+        margin: 0;
+    }
+
+    .icon {
+        width: 1em;
+        height: 1em;
+        vertical-align: -0.15em;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    h1 {
+        font-size: 26pt;
+        font-weight: 700;
+        margin: 0 0 0.3em 0;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+
+    .meta {
+        color: #64748b;
+        font-size: 10.5pt;
+        margin: 0 0 1.6em 0;
+        padding-bottom: 1.2em;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    p { margin: 0 0 0.85em 0; }
+
+    .label { color: #0f172a; font-weight: 600; }
+
+    em { color: #64748b; font-style: italic; }
+
+    hr {
+        border: none;
+        border-top: 1px solid #e2e8f0;
+        margin: 1.8em 0 1.4em 0;
+    }
+
+    h2 {
+        font-size: 10pt;
+        font-weight: 700;
+        color: #475569;
+        margin: 0 0 0.6em 0;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .sinopsis { text-align: justify; color: #1e293b; }
+</style>
+</head>
+<body>
+<h1>
+    <svg class="icon" viewBox="0 0 24 24"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9m6.1-2 3.1 4M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+    $titulo ($anio)
+</h1>
+<p class="meta">
+    <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    $puntuacion/10
+    &nbsp;·&nbsp;
+    <svg class="icon" viewBox="0 0 24 24"><path d="M8 2v4M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+    $fecha_estreno<span $duracion_display>
+    &nbsp;·&nbsp;
+    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    $duracion</span>
+</p>
+<p><span class="label">Géneros:</span> $generos</p>
+<p><span class="label">Protagonistas:</span> $protagonistas<em $otros_mas_display> (y $otros_mas más)</em></p>
+<hr>
+<h2>Sinopsis</h2>
+<p class="sinopsis">$sinopsis</p>
+</body>
+</html>
