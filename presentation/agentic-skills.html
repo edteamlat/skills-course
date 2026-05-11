@@ -374,6 +374,32 @@
   .combo-eq { font-family:var(--display); font-size:36px; font-weight:800; color:var(--accent); flex-shrink:0; }
   .combo-final h3 { font-size:18px; margin-bottom:8px; }
   .combo-final p { font-size:13px; line-height:1.65; }
+
+  /* AGENTS.md slides */
+  .agm-wrap { max-width:1100px; width:100%; margin-top:32px; }
+  .agm-list { list-style:none; display:flex; flex-direction:column; gap:14px; }
+  .agm-list li {
+    display:flex; gap:14px; align-items:flex-start;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:16px 20px;
+    font-size:15px; line-height:1.55; color:rgba(240,237,232,0.82);
+  }
+  .agm-list li .agm-bullet {
+    flex-shrink:0; width:6px; height:6px; border-radius:50%;
+    background:var(--accent); margin-top:9px;
+  }
+  .agm-list li strong { color:var(--text); font-weight:600; }
+  .agm-sections { display:grid; grid-template-columns:1fr 1fr; gap:14px 22px; }
+  .agm-sections li { font-size:15px; }
+  .agm-code-wrap { max-width:980px; width:100%; margin-top:24px; }
+  .agm-code {
+    background:#0d0d0d; border:1px solid var(--border2); border-radius:14px;
+    padding:22px 26px; font-family:var(--mono); font-size:12.5px; line-height:1.7;
+    color:rgba(240,237,232,0.85); white-space:pre; overflow:auto; max-height:62vh;
+  }
+  .agm-code .c-h    { color:var(--accent); font-weight:600; }
+  .agm-code .c-cm   { color:var(--muted); }
+  .agm-code .c-mono { color:var(--blue); }
 </style>
 </head>
 <body>
@@ -1019,17 +1045,96 @@ Run the extraction script:
     </div>
   </div>
 
+  <!-- SLIDE 16: AGENTS.md — el README para agentes -->
+  <div class="slide" id="s16">
+    <h2><span class="accent">AGENTS.md</span> — el README para agentes de IA</h2>
+    <div class="agm-wrap">
+      <ul class="agm-list">
+        <li><span class="agm-bullet"></span><span><strong>Qué es:</strong> formato abierto y estandarizado que da contexto e instrucciones a agentes de IA en proyectos de código (un “README para agentes”).</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Compatibilidad:</strong> soportado por más de <strong>25 herramientas</strong> — OpenAI Codex, GitHub Copilot, Google Jules, Gemini CLI, Cursor, VS Code, Zed, Aider, JetBrains Junie, Devin, Windsurf, Warp.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Ubicación:</strong> archivo en la raíz del repositorio; en monorepos se pueden anidar varios <span class="mono">AGENTS.md</span> y el agente lee el más cercano al archivo editado.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Precedencia:</strong> el <span class="mono">AGENTS.md</span> más cercano gana sobre los superiores; los prompts explícitos del usuario anulan al archivo.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Formato:</strong> Markdown estándar, sin campos obligatorios ni esquema rígido.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 17: Secciones recomendadas -->
+  <div class="slide" id="s17">
+    <h2>Secciones <span class="accent">recomendadas</span></h2>
+    <div class="agm-wrap">
+      <ul class="agm-list agm-sections">
+        <li><span class="agm-bullet"></span><span>Descripción general del proyecto</span></li>
+        <li><span class="agm-bullet"></span><span>Comandos de construcción <span class="mono">(build)</span></span></li>
+        <li><span class="agm-bullet"></span><span>Comandos y procedimientos de testing</span></li>
+        <li><span class="agm-bullet"></span><span>Directrices de estilo de código</span></li>
+        <li><span class="agm-bullet"></span><span>Convenciones de mensajes de commit</span></li>
+        <li><span class="agm-bullet"></span><span>Convenciones para pull requests</span></li>
+        <li><span class="agm-bullet"></span><span>Consideraciones de seguridad</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 18: Ejemplo para Go -->
+  <div class="slide" id="s18">
+    <h2>Ejemplo: <span class="accent">AGENTS.md</span> para un proyecto en <span class="accent">Go</span></h2>
+    <div class="agm-code-wrap">
+<div class="agm-code"><span class="c-h"># AGENTS.md</span>
+
+<span class="c-h">## Proyecto</span>
+API REST en Go 1.23 con arquitectura hexagonal.
+Base de datos PostgreSQL, migraciones con goose.
+
+<span class="c-h">## Testing</span>
+- <span class="c-mono">`go test -race -cover ./...`</span> con detector de race y cobertura
+- Tests de integración requieren Postgres: <span class="c-mono">`make test-integration`</span>
+
+<span class="c-h">## Estilo de código</span>
+- Formatear con <span class="c-mono">`gofmt`</span> y <span class="c-mono">`goimports`</span> antes de commitear
+- Linter: <span class="c-mono">`golangci-lint run`</span> debe pasar sin errores
+- Nombres de paquetes en minúsculas, sin guiones bajos
+- Errores: envolver con <span class="c-mono">`fmt.Errorf("contexto: %w", err)`</span>
+- Todos los ID de las struct deben ser uuid de <span class="c-mono">`google/uuid`</span> versión 4
+- Siempre utiliza <span class="c-mono">`gopls`</span> para verificar que el código está limpio y actualizado
+
+<span class="c-h">## Convenciones de commits</span>
+- Formato: <span class="c-mono">`tipo(scope): descripción`</span> (ej. <span class="c-mono">`feat(auth): agrega JWT`</span>)
+- Tipos: feat, fix, refactor, test, docs, chore
+
+<span class="c-h">## Seguridad</span>
+- Nunca loguear tokens, contraseñas ni datos PII
+- Usar <span class="c-mono">`crypto/rand`</span> para generar secrets, nunca <span class="c-mono">`math/rand`</span>
+- Validar entradas en la capa de handlers</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 20: SkillsBench -->
+  <div class="slide" id="s19">
+    <h2><span class="accent">SkillsBench</span>: ¿qué tanto sirven las Skills?</h2>
+    <div class="agm-wrap">
+      <ul class="agm-list">
+        <li><span class="agm-bullet"></span><span><strong>Qué es:</strong> benchmark que mide el impacto de las Agent Skills en LLMs sin modificar el modelo.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Curadas vs. auto-generadas:</strong> las humanas suben <strong>+16.2 pp</strong>; las auto-generadas no aportan o restan.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Por dominio:</strong> Salud <strong>+51.9 pp</strong> y Manufactura <strong>+41.9 pp</strong>; Software (+4.5 pp) y Matemáticas (+6.0 pp), bajo.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Menos es más:</strong> skills de <strong>2–3 módulos</strong> ganan a los manuales extensos.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Escala vs. skills:</strong> un modelo pequeño con skills puede superar a uno grande sin ellas.</span></li>
+        <li><span class="agm-bullet"></span><span><strong>Top configs:</strong> Gemini 3 Flash + Gemini CLI lidera con <strong>48.7%</strong>; Claude Opus 4.5 logra la mayor mejora (<strong>+23.3 pp</strong>).</span></li>
+      </ul>
+      <p style="margin-top:24px; font-family:var(--mono); font-size:12px; color:var(--muted);">Fuente: <a href="https://arxiv.org/pdf/2602.12670" style="color:var(--accent); text-decoration:none;">arxiv.org/pdf/2602.12670</a></p>
+    </div>
+  </div>
+
 </div>
 
 <div class="nav">
   <button onclick="prev()">← anterior</button>
   <div class="progress-dots" id="dots"></div>
-  <span class="counter" id="counter">1 / 16</span>
+  <span class="counter" id="counter">1 / 20</span>
   <button onclick="next()">siguiente →</button>
 </div>
 
 <script>
-  const TOTAL = 16;
+  const TOTAL = 20;
   let current = 0;
 
   function buildDots() {
